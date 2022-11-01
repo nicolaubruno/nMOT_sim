@@ -1,0 +1,9 @@
+,performance
+recording_time,0.0
+max_r,20.0
+max_v,3.0
+num_sim,2000.0
+num_bins,128.0
+wait_time,50.0
+dt,11.7
+parallel_tasks,4.0
