@@ -98,8 +98,8 @@ results_t simulate_atom(char *params_path, int opt, long seed_time){
 
         // Print progress
         progress = (int) (100 * res.time / (perform.recording_time + perform.wait_time));
-        if((progress % 5 == 0) && (progress > last_progress)){
-            print_progress(atom, res, B_params, progress);
+        if((progress % 1 == 0) && (progress > last_progress)){
+            //print_progress(atom, res, B_params, progress);
             last_progress = progress;
         }
 
@@ -107,7 +107,7 @@ results_t simulate_atom(char *params_path, int opt, long seed_time){
         iter++;
     }
 
-    print_progress(atom, res, B_params, progress);
+    //print_progress(atom, res, B_params, progress);
     //print_results(res, atom, 1);
 
     return res;
@@ -591,9 +591,9 @@ void set_ini_atom_state(atom_t *atom, initial_conditions_t ini_conds, magnetic_f
         R = (h * PI*trans.gamma) / (trans.lambda * atom->mass * u * g) * 1e5;
         z0 = (delta + gamma*0.5 * sqrt((R - 1)*s_0 - 1)) / (beta * chi);
 
-        printf("slope = %.15f um/kHz\n", (1 / (beta*chi))*1e9);
-        printf("z0 = %f m\n", z0);
-        exit(0);
+        //printf("slope = %.15f um/kHz\n", (1 / (beta*chi))*1e9);
+        //printf("z0 = %f m\n", z0);
+        //exit(0);
     }
     // ---
 
@@ -603,8 +603,8 @@ void set_ini_atom_state(atom_t *atom, initial_conditions_t ini_conds, magnetic_f
 
     if(z0 < 0) atom->pos[2] += z0;
 
-    r3_print(atom->pos, "pos [cm]");
-    exit(0);
+    //r3_print(atom->pos, "pos [cm]");
+    //exit(0);
 
     //atom->pos[0] = 0.5;
     //atom->pos[1] = 0.5;
@@ -833,12 +833,17 @@ double *get_scatt_rates(beams_setup_t beams_setup, atom_t atom, transitions_set_
 
         // Effective saturation parameter
         s_0 = beam.s_0 / (2*beam.sidebands.num + 1);
+        atom.pos[0] = 0;
+        atom.pos[1] = 0;
+        atom.pos[2] = -1;
         C = orthonormal_basis(r3_normalize(beam.k_dir));
         r = pow(r3_inner_product(C[0], atom.pos), 2);
         r += pow(r3_inner_product(C[1], atom.pos), 2);
         r = sqrt(r);
-        s_0 = s_0 * exp(-2 * pow((r / (1e-1 * beam.w)), 2));
+        //printf("r [cm] = %f\n", r);
+        s_0 = s_0 * exp(-2 * pow((r / (beam.w)), 2));
         //printf("s_0 = %f\n", s_0);
+        //exit(0);
 
         // Doppler shift
         doppler_shift = - 1e4 * (r3_inner_product(C[2], atom.vel)) / lambda; // 2pi kHz
@@ -1107,7 +1112,7 @@ int is_inside_threshold(atom_t atom, transitions_set_t trans_set, magnetic_field
     for(i = 0; i < beams_setup.num; i++){
         if(beams_setup.beams[i].s_0 > 0){
             rho = sqrt(r3_inner_product(atom.pos, atom.pos) - pow(r3_inner_product(atom.pos, beams_setup.beams[i].k_dir), 2));
-            if(rho > beams_setup.beams[i].w*0.1){
+            if(rho > beams_setup.beams[i].w){
                 check = 0;
                 break;
             }
@@ -1629,12 +1634,14 @@ void print_beams_setup(beams_setup_t beams_setup){
     int i = 0;
 
     printf("All Beams (n = %d)\n--\n", beams_setup.num);
+
     for(i = 0; i < beams_setup.num; i++){
         printf("Index = %d\n", beams_setup.beams[i].idx);
         r3_print(beams_setup.beams[i].k_dir, "k");
         r3_print(beams_setup.beams[i].pol_amp, "pol");
         printf("s_0 = %f\n", beams_setup.beams[i].s_0);
-        printf("delta [Natural Linewidth] = %f\n", beams_setup.beams[i].delta);
+        printf("w [cm] = %f\n", beams_setup.beams[i].w);
+        printf("delta [Gamma] = %f\n", beams_setup.beams[i].delta);
         printf("num_sidebands = %d\n", beams_setup.beams[i].sidebands.num);
         printf("freq_sidebands [kHz] = %f\n", beams_setup.beams[i].sidebands.freq);
         printf("trans_idx = %d\n", beams_setup.beams[i].trans_idx);
